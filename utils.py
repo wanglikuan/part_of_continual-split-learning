@@ -155,7 +155,7 @@ def our_train(model: nn.Module, labels: list, optimizer: torch.optim, data_loade
     #---------------------freeze
     if if_freeze == 1 :
         for idx, param in enumerate(model.parameters()):
-            if idx < cut_idx:
+            if idx >= cut_idx:
                 continue
             param.requires_grad = False
 
@@ -184,7 +184,7 @@ def our_train(model: nn.Module, labels: list, optimizer: torch.optim, data_loade
     #-----------------------------解冻
     if if_freeze == 1 :    
         for idx, param in enumerate(model.parameters()):
-            if idx < cut_idx:
+            if idx >= cut_idx:
                 continue
             param.requires_grad = True
 
