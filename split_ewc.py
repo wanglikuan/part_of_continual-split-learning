@@ -247,6 +247,8 @@ def our_process(train_loader, test_loader, labels, online=False, result_file='./
                 #our_train相比于ewc_train多两个参数：if_freeze和cut_idx    
                 if loss < args.threshold:
                     if_freeze = 1
+                else:
+                    if_freeze = 0
                 print('Iteration: {}\tLoss:{}\tif freeze:{}'.format(iteration, loss, if_freeze))
                 for sub_task in range(task + 1): #循环不同model
                     temp_model = copy.deepcopy(models[sub_task])
