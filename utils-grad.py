@@ -154,7 +154,7 @@ def our_train(model: nn.Module, labels: list, optimizer: torch.optim, data_loade
     model.apply(set_bn_eval) #冻结BN及其统计数据
 
     nofreezegrad = [] #存储全部不冻结的数据grad
-
+    nofreezegrad2 = []
     #---------------不冻结server&先不加ewc------
     epoch_loss = 0
     for data, target in data_loader:
@@ -208,14 +208,17 @@ def our_train(model: nn.Module, labels: list, optimizer: torch.optim, data_loade
         # for ewc in ewcs:
         #     loss += (lam / 2) * ewc.penalty(model)
         #     # print('ewc loss:', loss.item())
-        # epoch_loss += loss.item()
+        epoch_loss += loss.item()
 
         loss.backward()
         equalresult=[]
         for idx, p in enumerate(model.parameters()):
             # if idx >= cut_idx:
             #     continue
-            equalresult.append(torch.equal(nofreezegrad[idx], p.grad.data))
+            layer_g_tmp = torch.zeros_like(p.grad.data).cuda(gpu)
+            layer_g_tmp += p.grad.data
+            nofreezegrad2.append(layer_g_tmp)
+            equalresult.append(torch.equal(nofreezegrad[idx], nofreezegrad2[idx]))
         print('torch.equal_result:')
         print(equalresult)        
 
