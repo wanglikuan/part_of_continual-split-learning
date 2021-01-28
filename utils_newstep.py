@@ -180,22 +180,28 @@ def our_train(model: nn.Module, labels: list, optimizer: torch.optim, data_loade
         epoch_loss += loss.item()
 
         loss.backward()
-
+        countskip = 0
+        countall = 0
         #------根据if_freeze，决定是否冻结server----------------------------------------------
         if if_freeze == 1 :
             #----------------重写step---------------------           
             for group in optimizer.param_groups:
                 for idx, p in enumerate(group['params']):
-                    if idx >= cut_idx:
-                        print('skip_server_layer')
+                    countall += 1
+                    if idx < cut_idx:
+                        countskip += 1
+                        #print('skip_server_layer')
                         continue                    
                     if p.grad is None:
                         continue
                     d_p = p.grad
-                    p.add_(d_p, alpha=-group['lr'])
+                    #p.add_(d_p, alpha=-group['lr'])
+                    p.data = p.data - d_p*group['lr']
+            print("countskip:",countskip,"countall:",countall)
+        else:
+            optimizer.step()
         #----------------------------------------------------
-
-        optimizer.step()   #optimizer.param_groups : 'params' : .grad ==> 梯度 
+        #optimizer.step()   #optimizer.param_groups : 'params' : .grad ==> 梯度 
                            #91行
                            #for n, p in model.named_parameters():
                            #    p.grad.data ==> 当前网络层梯度数据？

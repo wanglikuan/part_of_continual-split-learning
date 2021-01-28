@@ -276,6 +276,6 @@ if __name__ == '__main__':
     elif args.method == 'split_free':
         ewc_process_without_split(train_loader, test_loader, labels, False, result_file='./result/{}_{}.txt'.format(args.method, args.dataset))
     elif args.method == 'ours':
-        our_process(train_loader, test_loader, labels, result_file='./result/{}_{}_{}.txt'.format(args.method, args.dataset, args.split))
+        our_process(train_loader, test_loader, labels, result_file='./result/newstep_{}_{}_{}_{}.txt'.format(args.method, args.dataset, args.split, args.threshold))
     else:
         standard_process(train_loader, test_loader, labels, result_file='./result/{}_{}_{}.txt'.format(args.method, args.dataset, args.split))
