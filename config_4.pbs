@@ -1,0 +1,39 @@
+##!/bin/sh
+#PBS -N ours_permuted_split0
+#PBS -l nodes=1:ppn=1 -W x=GRES:gpu@1
+#PBS -l walltime=36:00:00
+#PBS -q qgpu01
+#PBS -V
+#PBS -S /bin/bash
+
+module load anaconda3-5.2.0
+module load cuda-9.0
+module load openmpi-3.0.1-gcc-5.5.0
+source activate SplitLearning
+#################################################################
+NP=`cat $PBS_NODEFILE | wc -l`
+NN=`cat $PBS_NODEFILE | sort | uniq | tee /tmp/nodes.$$ | wc -l`
+cat $PBS_NODEFILE > /tmp/nodefile.$$
+echo "process will start at : "
+date
+echo "++++++++++++++++++++++++++++++++++++++++"
+cd $PBS_O_WORKDIR
+
+nvidia-smi > nv.out
+
+# This is the sample for DGS
+
+mpirun -n $NP python -u split_ewc_newstep.py --method=ours --dataset=permuted --split=0 --threshold=0.2 > ns_ours_AlexNet_permuted_split0_t0.2.out
+mpirun -n $NP python -u split_ewc_newstep.py --method=ours --dataset=permuted --split=0 --threshold=0.4 > ns_ours_AlexNet_permuted_split0_t0.4.out
+#mpirun -n $NP python -u split_ewc.py --method=online --dataset=permuted --split=0 > online_AlexNet_permuted_split0.out
+
+
+
+echo "++++++++++++++++++++++++++++++++++++++++"
+echo "process end at : "
+date
+rm -f /tmp/nodefile.$$
+rm -f /tmp/nodes.$$
+
+module unload openmpi-3.0.1-gcc-5.5.0
+module unload cuda-9.0
