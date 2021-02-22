@@ -17,7 +17,7 @@ from utils_firsttrain import EWC, splitEWC, ewc_train, normal_train, ours_first_
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--method', type=str, default='standard')
-parser.add_argument('--model', type=str, default='AlexNet')
+parser.add_argument('--model', type=str, default='ResNet18')
 parser.add_argument('--dataset', type=str, default='split')
 parser.add_argument('--split', type=int, default=3)
 parser.add_argument('--bsz', type=int, default=128)
@@ -278,6 +278,6 @@ if __name__ == '__main__':
     elif args.method == 'split_free':
         ewc_process_without_split(train_loader, test_loader, labels, False, result_file='./result/{}_{}.txt'.format(args.method, args.dataset))
     elif args.method == 'ours':
-        our_process(train_loader, test_loader, labels, result_file='./result/firsttrain_{}_{}_{}_{}.txt'.format(args.method, args.dataset, args.split, args.threshold))
+        our_process(train_loader, test_loader, labels, result_file='./result/firsttrain_resnet18_{}_{}_{}_{}_{}.txt'.format(args.FirstThreshold, args.method, args.dataset, args.split, args.threshold))
     else:
         standard_process(train_loader, test_loader, labels, result_file='./result/{}_{}_{}.txt'.format(args.method, args.dataset, args.split))
