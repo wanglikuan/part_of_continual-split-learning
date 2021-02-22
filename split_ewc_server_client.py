@@ -225,6 +225,7 @@ def our_process(train_loader, test_loader, labels, online=False, result_file='./
 
     ewcs = []
     if_freeze = 0
+    freeze_stat = 0
     for task in range(args.num_task):
         print('Training Task {}... Labels: {}'.format(task, labels[task]))
         model, optimizer = models[task] if task == 0 else models_copy(models[task], models[task-1], cut_idx), optimizers[task] #model为tmp变量循环用，model：copy了上一次task中model的param（与cut_idx有关）
@@ -232,7 +233,12 @@ def our_process(train_loader, test_loader, labels, online=False, result_file='./
             for param_group in optimizer.param_groups:
                 param_group['lr'] = args.first_lr
             for iteration in range(args.iterations):
-                loss = ours_first_train(model, labels[task], optimizer, train_loader[task], gpu, cut_idx, args.FirstThreshold)
+
+                loss = ours_first_train(model, labels[task], optimizer, train_loader[task], gpu, cut_idx, freeze_stat)
+                if loss > args.FirstThreshold:
+                    freeze_stat = 0
+                else:
+                    freeze_stat = 1
                 print('Iteration: {}\tLoss:{}'.format(iteration, loss))
                 acc = test_model(model, labels[task], test_loader[task], gpu)
                 print('Device Task: {}\tTest Task: {}\tAccuracy: {}'.format(task, task, acc))

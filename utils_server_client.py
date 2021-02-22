@@ -126,24 +126,24 @@ def normal_train(model: nn.Module, labels: list, optimizer: torch.optim, data_lo
         optimizer.step()
     return epoch_loss / len(data_loader)
 
-def ours_first_train(model: nn.Module, labels: list, optimizer: torch.optim, data_loader: torch.utils.data.DataLoader, gpu: torch.device, cut_idx, first_threshold):
+def ours_first_train(model: nn.Module, labels: list, optimizer: torch.optim, data_loader: torch.utils.data.DataLoader, gpu: torch.device, cut_idx, freeze_stat):
     model.train()
     model.apply(set_bn_eval)  #冻结BN及其统计数据
-    epoch_loss = 0
-    for data, target in data_loader:
-        data, target = Variable(data).cuda(gpu), Variable(target).cuda(gpu)
-        optimizer.zero_grad()
-        output = model(data)
-        for idx in range(output.size(1)):
-            if idx not in labels:
-                output[range(len(output)), idx] = 0
-        criterion = nn.CrossEntropyLoss()
-        loss = criterion(output, target)
-        epoch_loss += loss.item()
-        #loss.backward()
-        #optimizer.step()
+    # epoch_loss = 0
+    # for data, target in data_loader:
+    #     data, target = Variable(data).cuda(gpu), Variable(target).cuda(gpu)
+    #     optimizer.zero_grad()
+    #     output = model(data)
+    #     for idx in range(output.size(1)):
+    #         if idx not in labels:
+    #             output[range(len(output)), idx] = 0
+    #     criterion = nn.CrossEntropyLoss()
+    #     loss = criterion(output, target)
+    #     epoch_loss += loss.item()
+    #     #loss.backward()
+    #     #optimizer.step()
 
-    average_epoch_loss = (epoch_loss / len(data_loader))
+    # average_epoch_loss = (epoch_loss / len(data_loader))
 
     epoch_loss = 0    
     for data, target in data_loader:
@@ -160,7 +160,7 @@ def ours_first_train(model: nn.Module, labels: list, optimizer: torch.optim, dat
         countskip = 0
         countall = 0
         #-----------------------------------------------------------
-        if average_epoch_loss > first_threshold :
+        if freeze_stat == 0 :
             #----------------重写step---------------------           
             for group in optimizer.param_groups:
                 for idx, p in enumerate(group['params']):
