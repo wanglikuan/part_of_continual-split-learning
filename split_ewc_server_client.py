@@ -17,7 +17,7 @@ from utils_server_client import EWC, splitEWC, ewc_train, normal_train, ours_fir
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--method', type=str, default='standard')
-parser.add_argument('--model', type=str, default='ResNet18')
+parser.add_argument('--model', type=str, default='AlexNet')
 parser.add_argument('--dataset', type=str, default='split')
 parser.add_argument('--split', type=int, default=3)
 parser.add_argument('--bsz', type=int, default=128)
@@ -226,6 +226,7 @@ def our_process(train_loader, test_loader, labels, online=False, result_file='./
     ewcs = []
     if_freeze = 0
     freeze_stat = 0
+    loss = 10
     for task in range(args.num_task):
         print('Training Task {}... Labels: {}'.format(task, labels[task]))
         model, optimizer = models[task] if task == 0 else models_copy(models[task], models[task-1], cut_idx), optimizers[task] #model为tmp变量循环用，model：copy了上一次task中model的param（与cut_idx有关）
@@ -234,12 +235,12 @@ def our_process(train_loader, test_loader, labels, online=False, result_file='./
                 param_group['lr'] = args.first_lr
             for iteration in range(args.iterations):
 
-                loss = ours_first_train(model, labels[task], optimizer, train_loader[task], gpu, cut_idx, freeze_stat)
+                loss = ours_first_train(model, labels[task], optimizer, train_loader[task], gpu, cut_idx, freeze_stat, loss)
                 if loss > args.FirstThreshold:
                     freeze_stat = 0
                 else:
                     freeze_stat = 1
-                print('Iteration: {}\tLoss:{}'.format(iteration, loss))
+                print('Iteration: {}\tLoss:{}\tfreeze_stat:{}'.format(iteration, loss, freeze_stat))
                 acc = test_model(model, labels[task], test_loader[task], gpu)
                 print('Device Task: {}\tTest Task: {}\tAccuracy: {}'.format(task, task, acc))
                 with open(result_file, 'a') as f:
@@ -284,6 +285,6 @@ if __name__ == '__main__':
     elif args.method == 'split_free':
         ewc_process_without_split(train_loader, test_loader, labels, False, result_file='./result/{}_{}.txt'.format(args.method, args.dataset))
     elif args.method == 'ours':
-        our_process(train_loader, test_loader, labels, result_file='./result/firsttrain_resnet18_{}_{}_{}_{}_{}.txt'.format(args.FirstThreshold, args.method, args.dataset, args.split, args.threshold))
+        our_process(train_loader, test_loader, labels, result_file='./result/serverclient_alexnet_{}_{}_{}_{}_{}.txt'.format(args.FirstThreshold, args.method, args.dataset, args.split, args.threshold))
     else:
         standard_process(train_loader, test_loader, labels, result_file='./result/{}_{}_{}.txt'.format(args.method, args.dataset, args.split))

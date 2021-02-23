@@ -126,7 +126,7 @@ def normal_train(model: nn.Module, labels: list, optimizer: torch.optim, data_lo
         optimizer.step()
     return epoch_loss / len(data_loader)
 
-def ours_first_train(model: nn.Module, labels: list, optimizer: torch.optim, data_loader: torch.utils.data.DataLoader, gpu: torch.device, cut_idx, freeze_stat):
+def ours_first_train(model: nn.Module, labels: list, optimizer: torch.optim, data_loader: torch.utils.data.DataLoader, gpu: torch.device, cut_idx, freeze_stat, last_loss):
     model.train()
     model.apply(set_bn_eval)  #冻结BN及其统计数据
     # epoch_loss = 0
@@ -160,14 +160,19 @@ def ours_first_train(model: nn.Module, labels: list, optimizer: torch.optim, dat
         countskip = 0
         countall = 0
         #-----------------------------------------------------------
-        if freeze_stat == 0 :
-            #----------------重写step---------------------           
+        if last_loss > 1.5 :
+            optimizer.step()
+            print('pretrain',last_loss)
+        elif freeze_stat == 0 :
+            #----------------重写step---------------------
+            #optimizer.step()           
             for group in optimizer.param_groups:
                 for idx, p in enumerate(group['params']):
                     countall += 1
                     if idx >= cut_idx:  #跳过cut_idx ~ end, 冻结server参数
                         countskip += 1
                         #print('skip_server_layer')
+                        #p.grad = p.grad*0
                         continue                    
                     if p.grad is None:
                         continue
@@ -176,13 +181,16 @@ def ours_first_train(model: nn.Module, labels: list, optimizer: torch.optim, dat
                     p.data = p.data - d_p*group['lr']
             print("servercountskip:",countskip,"countall:",countall)
         else:
-            #----------------重写step---------------------           
+            #----------------重写step---------------------
+            #print('freeze_stat = 1')
+            #optimizer.step()           
             for group in optimizer.param_groups:
                 for idx, p in enumerate(group['params']):
                     countall += 1
                     if idx < cut_idx:  #跳过0 ~ cut_idx-1, 冻结device参数
                         countskip += 1
                         #print('skip_server_layer')
+                        #p.grad = p.grad*0
                         continue                    
                     if p.grad is None:
                         continue
