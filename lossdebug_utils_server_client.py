@@ -111,16 +111,29 @@ def set_bn_eval(m):
 
 def myloss(output, target, labels, weight=None, size_average=None, ignore_index=-100, reduce=None, reduction='mean'):
     def customized_log_softmax(output, dim, labels):
+        # torch.autograd.set_detect_anomaly(True)
         temp = output.softmax(dim)
-        for idx in range(temp.size(1)):
-            if idx not in labels:
-                temp[range(len(temp)), idx] = 0.0
-        temp = temp / torch.sum(temp, dim=dim).reshape(len(temp), 1)
-        for idx in range(temp.size(1)):
-            if idx not in labels:
-                temp[range(len(temp)), idx] = 1.0
+        # temp = deepcopy(output)
+        # print(temp, temp.shape)
+        for result in temp:
+            a = 0.0
+            for idx in labels:
+                a += result[idx]
+            result = result / a
+        # for idx in range(temp.size(1)):
+        #     if idx not in labels:
+        #         temp[range(len(temp)), idx] = 0.0
+        # print(temp, temp.shape)
+        # temp = temp / torch.sum(temp, dim=dim).reshape(len(temp), 1)
+        # print(temp, temp.shape)
+        # for idx in range(output.size(1)):
+        #     if idx not in labels:
+        #         output[range(len(output)), idx] = 1.0
+        # print(output, output.shape)
         return torch.log(temp)
-    return F.nll_loss(customized_log_softmax(output, 1, labels), target, weight, None, ignore_index, None, reduction)
+    output = customized_log_softmax(output, 1, labels)
+    # print(output)
+    return F.nll_loss(output, target, weight, None, ignore_index, None, reduction)
 
 def normal_train(model: nn.Module, labels: list, optimizer: torch.optim, data_loader: torch.utils.data.DataLoader, gpu: torch.device):
     model.train()
