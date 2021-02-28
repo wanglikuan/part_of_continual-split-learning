@@ -21,10 +21,10 @@ parser.add_argument('--model', type=str, default='AlexNet')
 parser.add_argument('--dataset', type=str, default='permuted')
 parser.add_argument('--split', type=int, default=3)
 parser.add_argument('--bsz', type=int, default=128)
-parser.add_argument('--num-task', type=int, default=1)
+parser.add_argument('--num-task', type=int, default=5)
 parser.add_argument('--first-lr', type=float, default=1e-2)
 parser.add_argument('--lr', type=float, default=1e-3)
-parser.add_argument('--iterations', type=int, default=60)
+parser.add_argument('--iterations', type=int, default=100)
 parser.add_argument('--lam', type=float, default=15)
 parser.add_argument('--num-gpu', type=int, default=1)
 
@@ -279,12 +279,12 @@ if __name__ == '__main__':
         train_loader, test_loader, labels = get_split_mnist(args.bsz, args.num_task)
 
     if args.method == 'ewc':
-        ewc_process(train_loader, test_loader, labels, result_file='./result/{}_{}_{}.txt'.format(args.method, args.dataset, args.split))
+        ewc_process(train_loader, test_loader, labels, result_file='./result/newloss_{}_{}_{}.txt'.format(args.method, args.dataset, args.split))
     elif args.method == 'online':
-        ewc_process(train_loader, test_loader, labels, True, result_file='./result/{}_{}_{}.txt'.format(args.method, args.dataset, args.split))
+        ewc_process(train_loader, test_loader, labels, True, result_file='./result/newloss_{}_{}_{}.txt'.format(args.method, args.dataset, args.split))
     elif args.method == 'split_free':
-        ewc_process_without_split(train_loader, test_loader, labels, False, result_file='./result/{}_{}.txt'.format(args.method, args.dataset))
+        ewc_process_without_split(train_loader, test_loader, labels, False, result_file='./result/newloss_{}_{}.txt'.format(args.method, args.dataset))
     elif args.method == 'ours':
-        our_process(train_loader, test_loader, labels, result_file='./result/lossdebugserverclient_alexnet_{}_{}_{}_{}_{}.txt'.format(args.FirstThreshold, args.method, args.dataset, args.split, args.threshold))
+        our_process(train_loader, test_loader, labels, result_file='./result/newlossdebugserverclient_alexnet_{}_{}_{}_{}_{}.txt'.format(args.FirstThreshold, args.method, args.dataset, args.split, args.threshold))
     else:
-        standard_process(train_loader, test_loader, labels, result_file='./result/{}_{}_{}.txt'.format(args.method, args.dataset, args.split))
+        standard_process(train_loader, test_loader, labels, result_file='./result/newloss_{}_{}_{}.txt'.format(args.method, args.dataset, args.split))
